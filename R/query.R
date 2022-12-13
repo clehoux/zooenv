@@ -60,7 +60,10 @@ SGDO_sql<-function(drv, latitude, longitude, date, time, timezone="UTC",depth.ma
   password=rstudioapi::askForPassword("Enter your password")
   #loop to extract ctd for each observations
   for(i in 1:length(ID)){
+    cat(paste0(i, "..."))
+
     conn <- ROracle::dbConnect(drv, username=username, password=password, dbname = connect.string)
+if(nchar (date[i])!=10) stop("Date format is not OK. should be YYYY/MM/DD")
 
     setTxtProgressBar(pb, i)
       sample_date <- lubridate::ymd_hms(paste0(date[i], time[i],":00"), tz=timezone[i])
@@ -91,7 +94,6 @@ SGDO_sql<-function(drv, latitude, longitude, date, time, timezone="UTC",depth.ma
                 jd.stat_jd AS Station_ctd,
                 ABS(sg.latd -", sample_lat ,") AS latdiff,
                 ABS(",sample_lon ," - sg.lond) AS longdiff,
-                NUMTODSINTERVAL(TO_DATE(sg.sytm, 'YYYY/MM/DD HH24:MI:SS') - TO_DATE ('",sample_date,"' , 'YYYY/MM/DD HH24:MI:SS'), 'SECOND') as daysdifference,
                 mi.desc_miss,
                 mi.acr_miss,
                 TO_CHAR(mi.dat_deb_miss,'YYYY') AS year
@@ -105,6 +107,8 @@ SGDO_sql<-function(drv, latitude, longitude, date, time, timezone="UTC",depth.ma
                 AND sg.PSAL IS NOT NULL
                 AND sg.TE90 IS NOT NULL")
 
+    # NUMTODSINTERVAL(TO_DATE(sg.sytm, 'YYYY/MM/DD HH24:MI:SS') - TO_DATE ('",sample_date,"' , 'YYYY/MM/DD HH24:MI:SS'), 'SECOND') as daysdifference,
+    #remove from query, caused problems
   rs <- ROracle::dbSendQuery(conn,sql_ctd)
   results<-ROracle::fetch(rs)
 
@@ -119,7 +123,7 @@ SGDO_sql<-function(drv, latitude, longitude, date, time, timezone="UTC",depth.ma
     sf::st_crs(ctd_sf) <- 4326
 
     dat_sf <- sf::st_as_sf(as.data.frame(cbind(latitude=latitude[i],longitude= longitude[i])), coords = c("longitude", "latitude"))
-    st_crs(dat_sf) <- 4326
+    sf::st_crs(dat_sf) <- 4326
     #cal_sf<-st_transform(cal_sf, crs=lcc)
 
     #dustance is in meters does not work with lat long 0.2
@@ -159,6 +163,10 @@ SGDO_sql<-function(drv, latitude, longitude, date, time, timezone="UTC",depth.ma
   results2<-ROracle::fetch(rs)
   results2$ID <- ID[i]
   }
+
+
+  if(nrow(results) ==0) results2 <-  data.frame(ID=ID[i])
+
   #########Bottles#########
   sql_bot<-paste0("SELECT DISTINCT
                 sg.seq_jd,
@@ -170,7 +178,6 @@ SGDO_sql<-function(drv, latitude, longitude, date, time, timezone="UTC",depth.ma
                 jd.stat_jd AS Station_bot,
                 ABS(sg.latd -", sample_lat ,") AS latdiff,
                 ABS(",sample_lon ," - sg.lond) AS longdiff,
-                NUMTODSINTERVAL(TO_DATE(sg.sytm, 'YYYY/MM/DD HH24:MI:SS') - TO_DATE ('",sample_date,"' , 'YYYY/MM/DD HH24:MI:SS'), 'SECOND') as daysdifference,
                 mi.desc_miss,
                 mi.acr_miss,
                 TO_CHAR(mi.dat_deb_miss,'YYYY') AS year
@@ -224,16 +231,28 @@ if(nrow(botresults !=0)){
   botresults2 <- ROracle::fetch(rs)
   botresults2$ID <- ID[i]
 
-  prof<- suppressMessages(dplyr::full_join(results2, botresults2))
+}
+if(nrow(botresults) ==0) botresults2 <-  data.frame(ID=ID[i], CPHL=NA)
 
-  if(!is.null(depth.max)) prof$depth.max = depth.max[i]
-  if(is.null(depth.max)) prof$depth.max =max(prof$PROFD_MAX_JD)
+prof<- suppressMessages(dplyr::full_join(results2, botresults2))
 
-  ctd<- summarize_CTD(data=prof,depth_range=range_ctd)
-  bot <-  summarize_BOT_STRAT(data=prof, depth_range=range_bot)
+if(!is.null(depth.max)) prof$depth.max = depth.max[i]
+if(is.null(depth.max)) prof$depth.max =max(prof$PROFD_MAX_JD)
 
-  ctd_id <-  dplyr::bind_rows(ctd_id, suppressMessages(dplyr::full_join(ctd, bot)))
-  }
+if(ncol(results2) >3){
+ctd<- summarize_CTD(data=prof,depth_range=range_ctd)
+}
+if(ncol(botresults2) >3){
+bot <-  summarize_BOT_STRAT(data=prof, depth_range=range_bot)
+}
+if(!ncol(botresults2) >3){
+  bot <- data.frame(ID=ID[i])
+}
+
+if(ncol(prof)>3){
+ctd_id <-  dplyr::bind_rows(ctd_id, suppressMessages(dplyr::full_join(ctd, bot)))
+}
+
 ROracle::dbDisconnect(conn)
 }
 return(ctd_id)

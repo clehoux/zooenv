@@ -60,8 +60,6 @@ SGDO_sql<-function(drv, latitude, longitude, date, time, timezone="UTC",depth.ma
   password=rstudioapi::askForPassword("Enter your password")
   #loop to extract ctd for each observations
   for(i in 1:length(ID)){
-    cat(paste0(i, "..."))
-
     conn <- ROracle::dbConnect(drv, username=username, password=password, dbname = connect.string)
 if(nchar (date[i])!=10) stop("Date format is not OK. should be YYYY/MM/DD")
 

@@ -82,6 +82,82 @@ if(nchar (date[i])!=10) stop("Date format is not OK. should be YYYY/MM/DD")
     start_lon<-longitude[i]-geotol
     end_lon<-longitude[i]+geotol
 
+
+    ###xbt###
+    sql_xbt<-paste0("SELECT DISTINCT
+                xbt.seq_jd,
+                xbt.latd,
+                xbt.lond,
+                xbt.sytm,
+                jd.COT_QUAL_JD,
+                jd.PROFD_MAX_JD,
+                jd.stat_jd AS Station_ctd,
+                ABS(xbt.latd -", sample_lat ,") AS latdiff,
+                ABS(",sample_lon ," - xbt.lond) AS longdiff,
+                mi.desc_miss,
+                mi.acr_miss,
+                TO_CHAR(mi.dat_deb_miss,'YYYY') AS year
+                FROM xbtDO.DONNEES_XBT xbt, xbtDO.JEU_DONNEES jd, xbtDO.MISSION_EXP mi
+                WHERE
+                jd.seq_jd = xbt.seq_jd
+                AND mi.acr_miss=jd.acr_miss
+                AND(xbt.LATD BETWEEN ", start_lat ," AND ",end_lat," AND xbt.LOND BETWEEN ", start_lon ," AND ", end_lon ,")
+                AND TO_CHAR(xbt.sytm, 'YYYY/MM/DD HH24:MI:SS') >= '",start_date,"'
+                AND TO_CHAR(xbt.sytm, 'YYYY/MM/DD HH24:MI:SS') <= '",end_date, "'
+                AND xbt.PSAL IS NOT NULL
+                AND xbt.TE90 IS NOT NULL")
+
+    # NUMTODSINTERVAL(TO_DATE(sg.sytm, 'YYYY/MM/DD HH24:MI:SS') - TO_DATE ('",sample_date,"' , 'YYYY/MM/DD HH24:MI:SS'), 'SECOND') as daysdifference,
+    #remove from query, caused problems
+    rsxbt <- ROracle::dbSendQuery(conn,sql_xbt)
+    xbresults<-ROracle::fetch(rsxbt)
+
+    if(!is.null(station) & nrow(xbresults >1)){
+      if(nrow(xbresults)>1 & station[i] %in% xbresults$STATION_CTD) xbresults<-  xbresults %>% dplyr::filter(STATION_CTD==station[i])
+      xbt_JD=xbresults$SEQ_JD
+    }
+
+    if(is.null(station) | nrow(xbresults)>1){
+
+      xbt_sf <- sf::st_as_sf(xbresults, coords = c("LOND", "LATD"))
+      sf::st_crs(xbt_sf) <- 4326
+
+      dat_sf <- sf::st_as_sf(as.data.frame(cbind(latitude=latitude[i],longitude= longitude[i])), coords = c("longitude", "latitude"))
+      sf::st_crs(dat_sf) <- 4326
+      #cal_sf<-st_transform(cal_sf, crs=lcc)
+
+      #dustance is in meters does not work with lat long 0.2
+      xbt_JD= suppressMessages(sf::st_join(dat_sf, xbt_sf, join = nngeo::st_nn)$SEQ_JD)
+      xbresults <- xbresults %>%  dplyr::filter(SEQ_JD==xbt_JD)
+
+    }
+
+    if(nrow(xbresults ==1)){
+      xbt_JD=xbresults$SEQ_JD
+    }
+
+    if(nrow(xbresults !=0)){
+
+
+      sql_xbt2<-paste0("SELECT
+                xbt.deph,
+                xbt.te90,
+                jd.PROFD_MAX_JD
+                FROM xbtDO.DONNEES_XBT xbt,
+                xbtDO.JEU_DONNEES jd
+                WHERE
+               xbt.SEQ_JD = jd.SEQ_JD
+                AND xbt.seq_jd IN('",xbt_JD,"')")
+      rsxbt2 <- ROracle::dbSendQuery(conn,sql_xbt2)
+      xbresults2<-ROracle::fetch(rsxbt2)
+      xbresults2$ID <- ID[i]
+    }
+
+
+    if(nrow(xbresults) ==0) xbresults2 <-  data.frame(ID=ID[i])
+
+
+    ####ctd####
     sql_ctd<-paste0("SELECT DISTINCT
                 sg.seq_jd,
                 sg.latd,
@@ -108,16 +184,16 @@ if(nchar (date[i])!=10) stop("Date format is not OK. should be YYYY/MM/DD")
     # NUMTODSINTERVAL(TO_DATE(sg.sytm, 'YYYY/MM/DD HH24:MI:SS') - TO_DATE ('",sample_date,"' , 'YYYY/MM/DD HH24:MI:SS'), 'SECOND') as daysdifference,
     #remove from query, caused problems
   rs <- ROracle::dbSendQuery(conn,sql_ctd)
-  results<-ROracle::fetch(rs)
+  xbresults<-ROracle::fetch(rs)
 
-  if(!is.null(station) & nrow(results >1)){
-  if(nrow(results)>1 & station[i] %in% results$STATION_CTD) results<-  results %>% dplyr::filter(STATION_CTD==station[i])
-  ctd_JD=results$SEQ_JD
+  if(!is.null(station) & nrow(xbresults >1)){
+  if(nrow(xbresults)>1 & station[i] %in% xbresults$STATION_CTD) xbresults<-  xbresults %>% dplyr::filter(STATION_CTD==station[i])
+  ctd_JD=xbresults$SEQ_JD
 }
 
-  if(is.null(station) | nrow(results)>1){
+  if(is.null(station) | nrow(xbresults)>1){
 
-    ctd_sf <- sf::st_as_sf(results, coords = c("LOND", "LATD"))
+    ctd_sf <- sf::st_as_sf(xbresults, coords = c("LOND", "LATD"))
     sf::st_crs(ctd_sf) <- 4326
 
     dat_sf <- sf::st_as_sf(as.data.frame(cbind(latitude=latitude[i],longitude= longitude[i])), coords = c("longitude", "latitude"))
@@ -126,15 +202,15 @@ if(nchar (date[i])!=10) stop("Date format is not OK. should be YYYY/MM/DD")
 
     #dustance is in meters does not work with lat long 0.2
    ctd_JD= suppressMessages(sf::st_join(dat_sf, ctd_sf, join = nngeo::st_nn)$SEQ_JD)
-   results <- results %>%  dplyr::filter(SEQ_JD==ctd_JD)
+   xbresults <- xbresults %>%  dplyr::filter(SEQ_JD==ctd_JD)
 
   }
 
-  if(nrow(results ==1)){
-    ctd_JD=results$SEQ_JD
+  if(nrow(xbresults ==1)){
+    ctd_JD=xbresults$SEQ_JD
   }
 
-  if(nrow(results !=0)){
+  if(nrow(xbresults !=0)){
 
 
 
@@ -232,12 +308,12 @@ if(nrow(botresults !=0)){
 }
 if(nrow(botresults) ==0) botresults2 <-  data.frame(ID=ID[i], CPHL=NA)
 
-prof<- suppressMessages(dplyr::full_join(results2, botresults2))
+prof<- suppressMessages(list(xbresults2, results2, botresults2) %>%  dplyr::reduce(dplyr::full_join))
 
 if(!is.null(depth.max)) prof$depth.max = depth.max[i]
 if(is.null(depth.max)) prof$depth.max =max(prof$PROFD_MAX_JD)
 
-if(ncol(results2) >3){
+if(ncol(results2) >3 | ncol(xbresults2)>3){
 ctd<- summarize_CTD(data=prof,depth_range=range_ctd)
 }
 if(ncol(botresults2) >3){

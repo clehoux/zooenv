@@ -97,14 +97,13 @@ if(nchar (date[i])!=10) stop("Date format is not OK. should be YYYY/MM/DD")
                 mi.desc_miss,
                 mi.acr_miss,
                 TO_CHAR(mi.dat_deb_miss,'YYYY') AS year
-                FROM xbtDO.DONNEES_XBT xbt, xbtDO.JEU_DONNEES jd, xbtDO.MISSION_EXP mi
+                FROM SGDO.DONNEES_XBT xbt, SGDO.JEU_DONNEES jd, SGDO.MISSION_EXP mi
                 WHERE
                 jd.seq_jd = xbt.seq_jd
                 AND mi.acr_miss=jd.acr_miss
                 AND(xbt.LATD BETWEEN ", start_lat ," AND ",end_lat," AND xbt.LOND BETWEEN ", start_lon ," AND ", end_lon ,")
                 AND TO_CHAR(xbt.sytm, 'YYYY/MM/DD HH24:MI:SS') >= '",start_date,"'
                 AND TO_CHAR(xbt.sytm, 'YYYY/MM/DD HH24:MI:SS') <= '",end_date, "'
-                AND xbt.PSAL IS NOT NULL
                 AND xbt.TE90 IS NOT NULL")
 
     # NUMTODSINTERVAL(TO_DATE(sg.sytm, 'YYYY/MM/DD HH24:MI:SS') - TO_DATE ('",sample_date,"' , 'YYYY/MM/DD HH24:MI:SS'), 'SECOND') as daysdifference,
@@ -143,8 +142,8 @@ if(nchar (date[i])!=10) stop("Date format is not OK. should be YYYY/MM/DD")
                 xbt.deph,
                 xbt.te90,
                 jd.PROFD_MAX_JD
-                FROM xbtDO.DONNEES_XBT xbt,
-                xbtDO.JEU_DONNEES jd
+                FROM SGDO.DONNEES_XBT xbt,
+                SGDO.JEU_DONNEES jd
                 WHERE
                xbt.SEQ_JD = jd.SEQ_JD
                 AND xbt.seq_jd IN('",xbt_JD,"')")
@@ -184,16 +183,16 @@ if(nchar (date[i])!=10) stop("Date format is not OK. should be YYYY/MM/DD")
     # NUMTODSINTERVAL(TO_DATE(sg.sytm, 'YYYY/MM/DD HH24:MI:SS') - TO_DATE ('",sample_date,"' , 'YYYY/MM/DD HH24:MI:SS'), 'SECOND') as daysdifference,
     #remove from query, caused problems
   rs <- ROracle::dbSendQuery(conn,sql_ctd)
-  xbresults<-ROracle::fetch(rs)
+  results<-ROracle::fetch(rs)
 
-  if(!is.null(station) & nrow(xbresults >1)){
-  if(nrow(xbresults)>1 & station[i] %in% xbresults$STATION_CTD) xbresults<-  xbresults %>% dplyr::filter(STATION_CTD==station[i])
-  ctd_JD=xbresults$SEQ_JD
+  if(!is.null(station) & nrow(results >1)){
+  if(nrow(results)>1 & station[i] %in% results$STATION_CTD) results<-  results %>% dplyr::filter(STATION_CTD==station[i])
+  ctd_JD=results$SEQ_JD
 }
 
-  if(is.null(station) | nrow(xbresults)>1){
+  if(is.null(station) | nrow(results)>1){
 
-    ctd_sf <- sf::st_as_sf(xbresults, coords = c("LOND", "LATD"))
+    ctd_sf <- sf::st_as_sf(results, coords = c("LOND", "LATD"))
     sf::st_crs(ctd_sf) <- 4326
 
     dat_sf <- sf::st_as_sf(as.data.frame(cbind(latitude=latitude[i],longitude= longitude[i])), coords = c("longitude", "latitude"))
@@ -202,15 +201,15 @@ if(nchar (date[i])!=10) stop("Date format is not OK. should be YYYY/MM/DD")
 
     #dustance is in meters does not work with lat long 0.2
    ctd_JD= suppressMessages(sf::st_join(dat_sf, ctd_sf, join = nngeo::st_nn)$SEQ_JD)
-   xbresults <- xbresults %>%  dplyr::filter(SEQ_JD==ctd_JD)
+   results <- results %>%  dplyr::filter(SEQ_JD==ctd_JD)
 
   }
 
-  if(nrow(xbresults ==1)){
-    ctd_JD=xbresults$SEQ_JD
+  if(nrow(results ==1)){
+    ctd_JD=results$SEQ_JD
   }
 
-  if(nrow(xbresults !=0)){
+  if(nrow(results !=0)){
 
 
 
@@ -308,7 +307,7 @@ if(nrow(botresults !=0)){
 }
 if(nrow(botresults) ==0) botresults2 <-  data.frame(ID=ID[i], CPHL=NA)
 
-prof<- suppressMessages(list(xbresults2, results2, botresults2) %>%  dplyr::reduce(dplyr::full_join))
+prof<- suppressMessages(list(xbresults2, results2, botresults2) %>%  reduce(dplyr::full_join))
 
 if(!is.null(depth.max)) prof$depth.max = depth.max[i]
 if(is.null(depth.max)) prof$depth.max =max(prof$PROFD_MAX_JD)
@@ -344,6 +343,8 @@ return(ctd_id)
 summarize_CTD<- function(data,depth_range=c(0,50)){
   col_out<-  c(paste0("T", paste(depth_range, collapse="_")),paste0("S", paste(depth_range, collapse="_")),"T_NB","S_NB","T_SURF","S_SURF", "STRAT","Tmin")
 
+
+
 data <-  data %>%  dplyr::arrange(DEPH) %>%  dplyr::filter(is.na(CPHL))
 
     nominal_depth<-ifelse(round(max(data$depth.max)*0.85,0) > max(data$DEPH),max(data$DEPH),round(max(data$depth.max)*0.85,0))
@@ -372,7 +373,14 @@ data <-  data %>%  dplyr::arrange(DEPH) %>%  dplyr::filter(is.na(CPHL))
 
     #calculate averages
     #temp<-cbind(u,mean(data[row_range,"Temp"], na.rm=T),mean(data[row_range,"Salinity"], na.rm=T),mean(data[row_range,"DENS"], na.rm=T),STRAT,T_NB,S_NB,T_SURF,S_SURF)
-    temp<-as.data.frame(cbind(mean(data[row_range,"TE90"], na.rm=T),mean(data[row_range,"PSAL"], na.rm=T),T_NB,S_NB,T_SURF,S_SURF, STRAT, Tmin))
+    temp<-as.data.frame(cbind(mean(data[row_range,"TE90"], na.rm=T),
+                              tryCatch({mean(data[row_range,"PSAL"], na.rm=T)}, error = function(e) {return(NA)}),
+                              T_NB,
+                              ifelse(is.null(S_NB), NA, S_NB),
+                              T_SURF,
+                              ifelse(is.null(S_SURF), NA, S_SURF),
+                              ifelse(is.null(STRAT), NA, STRAT),
+                              Tmin))
 
     colnames(temp)<-col_out
     temp$ID <-  data[1,"ID"]

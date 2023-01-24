@@ -15,7 +15,7 @@ Imports:
     lubridate,
     nngeo,
     pracma,
-    purr,
+    purrr,
     ROracle,
     rstudioapi,
     sf,

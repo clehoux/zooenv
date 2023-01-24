@@ -72,7 +72,7 @@ if(nchar (date[i])!=10) stop("Date format is not OK. should be YYYY/MM/DD")
       sample_date<-gsub(sample_date,pattern="-", replacement="/")#change format to fit with sql
       start_date<-gsub(start_date,pattern="-", replacement="/")#change format to fit with sql
       end_date<-gsub(end_date,pattern="-", replacement="/")#change format to fit with sql
-stop("date completed")
+
 
     sample_lat<-latitude[i]
     start_lat<-latitude[i]-geotol  #geographic query within 1 degree lat/long
@@ -110,7 +110,7 @@ stop("date completed")
     #remove from query, caused problems
     rsxbt <- ROracle::dbSendQuery(conn,sql_xbt)
     xbresults<-ROracle::fetch(rsxbt)
-
+    stop("query completed")
     if(!is.null(station) & nrow(xbresults >1)){
       if(nrow(xbresults)>1 & station[i] %in% xbresults$STATION_CTD) xbresults<-  xbresults %>% dplyr::filter(STATION_CTD==station[i])
       xbt_JD=xbresults$SEQ_JD

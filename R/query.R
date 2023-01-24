@@ -72,7 +72,7 @@ if(nchar (date[i])!=10) stop("Date format is not OK. should be YYYY/MM/DD")
       sample_date<-gsub(sample_date,pattern="-", replacement="/")#change format to fit with sql
       start_date<-gsub(start_date,pattern="-", replacement="/")#change format to fit with sql
       end_date<-gsub(end_date,pattern="-", replacement="/")#change format to fit with sql
-
+stop("date completed")
 
     sample_lat<-latitude[i]
     start_lat<-latitude[i]-geotol  #geographic query within 1 degree lat/long

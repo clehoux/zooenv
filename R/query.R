@@ -308,13 +308,13 @@ if(nrow(botresults !=0)){
 if(nrow(botresults) ==0) botresults2 <-  data.frame(ID=ID[i], CPHL=NA)
 
 prof<- suppressMessages(list(xbresults2, results2, botresults2) %>%  reduce(dplyr::full_join))
+stop(View(prof))
 
 if(!is.null(depth.max)) prof$depth.max = depth.max[i]
 if(is.null(depth.max)) prof$depth.max =max(prof$PROFD_MAX_JD)
 
 if(ncol(results2) >3 | ncol(xbresults2)>3){
 ctd<- summarize_CTD(data=prof,depth_range=range_ctd)
-stop("summarizeCTD completed")
 }
 if(ncol(botresults2) >3){
 bot <-  summarize_BOT_STRAT(data=prof, depth_range=range_bot)

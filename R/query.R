@@ -110,7 +110,7 @@ if(nchar (date[i])!=10) stop("Date format is not OK. should be YYYY/MM/DD")
     #remove from query, caused problems
     rsxbt <- ROracle::dbSendQuery(conn,sql_xbt)
     xbresults<-ROracle::fetch(rsxbt)
-    stop("query completed")
+
     if(!is.null(station) & nrow(xbresults >1)){
       if(nrow(xbresults)>1 & station[i] %in% xbresults$STATION_CTD) xbresults<-  xbresults %>% dplyr::filter(STATION_CTD==station[i])
       xbt_JD=xbresults$SEQ_JD
@@ -306,7 +306,7 @@ if(nrow(botresults !=0)){
 
 }
 if(nrow(botresults) ==0) botresults2 <-  data.frame(ID=ID[i], CPHL=NA)
-
+stop("all query completed")
 prof<- suppressMessages(list(xbresults2, results2, botresults2) %>%  reduce(dplyr::full_join))
 
 if(!is.null(depth.max)) prof$depth.max = depth.max[i]

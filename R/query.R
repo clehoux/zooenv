@@ -347,10 +347,15 @@ summarize_CTD<- function(data,depth_range=c(0,50)){
 
 data <-  data %>%  dplyr::arrange(DEPH) %>%  dplyr::filter(is.na(CPHL))
 
-    Tmin<-min(data[,"TE90"], na.rm=T)
+   #  nominal_depth<-ifelse(round(max(data$depth.max)*0.85,0) > max(data$DEPH),max(data$DEPH),round(max(data$depth.max)*0.85,0))
+   #  T_NB<-data[which(round(data$DEPH,0)==round(nominal_depth,0))[1],"TE90"]
+   #  S_NB<-data[which(round(data$DEPH,0)==round(nominal_depth,0))[1],"PSAL"]
 
-    T_NB<-data[which.max(data$DEPH)[1],"TE90"]
-    S_NB<-data[which.max(data$DEPH)[1],"PSAL"]
+  T_NB<-data[which.max(data$DEPH)[1],"TE90"]
+  S_NB<-data[which.max(data$DEPH)[1],"PSAL"]
+
+
+    Tmin<-min(data[,"TE90"], na.rm=T)
 
     surf_depth <- ifelse(5 %in% data$DEPH, 5, min(data$DEPH))
 

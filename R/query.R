@@ -343,21 +343,22 @@ return(ctd_id)
 summarize_CTD<- function(data,depth_range=c(0,50)){
   col_out<-  c(paste0("T", paste(depth_range, collapse="_")),paste0("S", paste(depth_range, collapse="_")),"T_NB","S_NB","T_SURF","S_SURF", "STRAT","Tmin")
 
-
-
 data <-  data %>%  dplyr::arrange(DEPH) %>%  dplyr::filter(is.na(CPHL))
 
-   #  nominal_depth<-ifelse(round(max(data$depth.max)*0.85,0) > max(data$DEPH),max(data$DEPH),round(max(data$depth.max)*0.85,0))
+
+last_5_m= seq(max(data$DEPH)-4, max(data$DEPH))
+
+ #  nominal_depth<-ifelse(round(max(data$depth.max)*0.85,0) > max(data$DEPH),max(data$DEPH),round(max(data$depth.max)*0.85,0))
    #  T_NB<-data[which(round(data$DEPH,0)==round(nominal_depth,0))[1],"TE90"]
    #  S_NB<-data[which(round(data$DEPH,0)==round(nominal_depth,0))[1],"PSAL"]
 
-  T_NB<-data[which.max(data$DEPH)[1],"TE90"]
-  S_NB<-data[which.max(data$DEPH)[1],"PSAL"]
+  T_NB<-mean(data[which(data$DEPH %in% last_5_m),"TE90"], na.rm=T)
+  S_NB<-mean(data[which(data$DEPH %in% last_5_m),"PSAL"], na.rm=T)
 
 
     Tmin<-min(data[,"TE90"], na.rm=T)
 
-    surf_depth <- ifelse(5 %in% data$DEPH, 5, min(data$DEPH))
+    surf_depth <- ifelse(5 %in% data$DEPH, 5, min(data$DEPH)) # lost of missing values above 5 m
 
     T_SURF<-data[which(data$DEPH == surf_depth),"TE90"]
     DENS_SURF<-data[which(data$DEPH == surf_depth),"DENS"]

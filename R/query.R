@@ -358,7 +358,7 @@ last_5_m= seq(max(data$DEPH)-4, max(data$DEPH))
 
     Tmin<-min(data[,"TE90"], na.rm=T)
 
-    surf_depth <- ifelse(5 %in% data$DEPH, 5, min(data$DEPH)) # lost of missing values above 5 m
+    surf_depth <- ifelse(5 %in% data$DEPH, 5, min(data$DEPH)) # lots of missing values above 5 m
 
     T_SURF<-data[which(data$DEPH == surf_depth),"TE90"]
     DENS_SURF<-data[which(data$DEPH == surf_depth),"DENS"]

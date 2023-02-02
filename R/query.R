@@ -307,7 +307,7 @@ if(nrow(botresults !=0)){
 }
 if(nrow(botresults) ==0) botresults2 <-  data.frame(ID=ID[i], CPHL=NA)
 
-prof<- suppressMessages(list(xbresults2, results2, botresults2) %>%  purrr::reduce(dplyr::full_join))
+prof<- suppressMessages(list(xbresults2, results2, botresults2) %>%  purrr::reduce(dplyr::full_join)) %>%  mutate(DEPH=round(DEPH))
 
 if(!is.null(depth.max)) prof$depth.max = depth.max[i]
 if(is.null(depth.max)) prof$depth.max =max(prof$PROFD_MAX_JD)
@@ -354,7 +354,6 @@ last_5_m= seq(max(data$DEPH)-4, max(data$DEPH))
 
   T_NB<-mean(data[which(data$DEPH %in% last_5_m),"TE90"], na.rm=T)
   S_NB<-mean(data[which(data$DEPH %in% last_5_m),"PSAL"], na.rm=T)
-
 
     Tmin<-min(data[,"TE90"], na.rm=T)
 

@@ -308,8 +308,6 @@ if(nrow(botresults !=0)){
 if(nrow(botresults) ==0) botresults2 <-  data.frame(ID=ID[i], CPHL=NA)
 
 prof<- suppressMessages(list(xbresults2, results2, botresults2) %>%  purrr::reduce(dplyr::full_join))
-prof$DEPH <-  round(prof$DEPH)
-
 
 if(!is.null(depth.max)) prof$depth.max = depth.max[i]
 if(is.null(depth.max)) prof$depth.max =max(prof$PROFD_MAX_JD)
@@ -345,7 +343,7 @@ return(ctd_id)
 summarize_CTD<- function(data,depth_range=c(0,50)){
   col_out<-  c(paste0("T", paste(depth_range, collapse="_")),paste0("S", paste(depth_range, collapse="_")),"T_NB","S_NB","T_SURF","S_SURF", "STRAT","Tmin")
 
-data <-  data %>%  dplyr::arrange(DEPH) %>%  dplyr::filter(is.na(CPHL))
+data <-  data %>%  dplyr::arrange(DEPH) %>%  dplyr::filter(is.na(CPHL)) %>% dplyr::mutate(DEPH=round(DEPH))
 
 
 last_5_m= seq(max(data$DEPH)-4, max(data$DEPH))

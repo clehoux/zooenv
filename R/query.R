@@ -116,7 +116,7 @@ if(nchar (date[i])!=10) stop("Date format is not OK. should be YYYY/MM/DD")
       xbt_JD=xbresults$SEQ_JD
     }
 
-    if(is.null(station) | nrow(xbresults)>1){
+    if(is.null(station) & nrow(xbresults)>1){
 
       xbt_sf <- sf::st_as_sf(xbresults, coords = c("LOND", "LATD"))
       sf::st_crs(xbt_sf) <- 4326
@@ -190,7 +190,7 @@ if(nchar (date[i])!=10) stop("Date format is not OK. should be YYYY/MM/DD")
   ctd_JD=results$SEQ_JD
 }
 
-  if(is.null(station) | nrow(results)>1){
+  if(is.null(station) & nrow(results)>1){
 
     ctd_sf <- sf::st_as_sf(results, coords = c("LOND", "LATD"))
     sf::st_crs(ctd_sf) <- 4326
@@ -271,7 +271,7 @@ botresults<-ROracle::fetch(rs)
     bot_JD=botresults$SEQ_JD
   }
 
-  if(is.null(station) | nrow(botresults)>1){
+  if(is.null(station) & nrow(botresults)>1){
 
     bot_sf <- sf::st_as_sf(botresults, coords = c("LOND", "LATD"))
     sf::st_crs(bot_sf) <- 4326

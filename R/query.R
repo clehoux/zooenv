@@ -277,7 +277,7 @@ botresults<-ROracle::fetch(rs)
     sf::st_crs(bot_sf) <- 4326
 
     dat_sf <- sf::st_as_sf(as.data.frame(cbind(latitude=latitude[i],longitude= longitude[i])), coords = c("longitude", "latitude"))
-    st_crs(dat_sf) <- 4326
+    sf::st_crs(dat_sf) <- 4326
     #cal_sf<-st_transform(cal_sf, crs=lcc)
 
     #dustance is in meters does not work with lat long 0.2

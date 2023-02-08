@@ -420,7 +420,7 @@ summarize_BOT_STRAT<- function(df_data, depth_range=c(0,100)){
   df_data <-  df_data %>%  dplyr::arrange(DEPH) %>% dplyr::filter(!is.na(CPHL)) %>%  dplyr::select(ID,DEPH, depth.max, CPHL)
 
 
-    integration<-DIS_Profile_Integration(df.df_data=df_data, depth_range=depth_range)
+    integration<-DIS_Profile_Integration(df.data=df_data, depth_range=depth_range)
     integration<- tidyr::pivot_wider(integration, 1, names_from="variable", values_from = "value")
 
     fil<- dplyr::filter(df_data, DEPH < 5)

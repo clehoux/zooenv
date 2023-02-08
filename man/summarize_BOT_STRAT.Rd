@@ -4,12 +4,12 @@
 \alias{summarize_BOT_STRAT}
 \title{Chlorophyll trapezoidal integration}
 \usage{
-summarize_BOT_STRAT(data, depth_range = c(0, 100))
+summarize_BOT_STRAT(df_data, depth_range = c(0, 100))
 }
 \arguments{
-\item{data}{bottles data at discrete depth}
-
 \item{depth_range}{vector of 2 values, for chlrophyll integration}
+
+\item{data}{bottles data at discrete depth}
 }
 \value{
 a data frame of 1 row for all variables calculated for the unique identifier

@@ -4,12 +4,8 @@
 \name{zooenv-package}
 \alias{zooenv}
 \alias{zooenv-package}
-\title{zooenv: What the Package Does (One Line, Title Case)}
+\title{zooenv: Environmental variables merging with zooplancton data}
 \description{
-What the package does (one paragraph).
-}
-\author{
-\strong{Maintainer}: First Last \email{first.last@example.com} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
-
+Extract and compute indices from CTD and Bottle data and merge with zooplankton dataframe.
 }
 \keyword{internal}

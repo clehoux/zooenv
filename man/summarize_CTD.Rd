@@ -4,10 +4,10 @@
 \alias{summarize_CTD}
 \title{Summarizing CTD profiles}
 \usage{
-summarize_CTD(data, depth_range = c(0, 50))
+summarize_CTD(df_data, depth_range = c(0, 50))
 }
 \arguments{
-\item{data}{CTD data}
+\item{df_data}{data frame with following variables: DEPH, TE90, PSAL, DENS, depth.max}
 
 \item{depth_range}{vector of 2 values identifying the range of temperature and salinity for average}
 }

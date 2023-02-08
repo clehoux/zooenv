@@ -313,10 +313,10 @@ if(!is.null(depth.max)) prof$depth.max = depth.max[i]
 if(is.null(depth.max)) prof$depth.max =max(prof$PROFD_MAX_JD)
 
 if(ncol(results2) >3 | ncol(xbresults2)>3){
-ctd<- summarize_CTD(data=prof,depth_range=range_ctd)
+ctd<- summarize_CTD(df_data=prof,depth_range=range_ctd)
 }
 if(ncol(botresults2) >3){
-bot <-  summarize_BOT_STRAT(data=prof, depth_range=range_bot)
+bot <-  summarize_BOT_STRAT(df_data=prof, depth_range=range_bot)
 }
 if(!ncol(botresults2) >3){
   bot <- data.frame(ID=ID[i])
@@ -333,63 +333,76 @@ return(ctd_id)
 
 #' Summarizing CTD profiles
 #'
-#' @param data CTD data
+#' @param df_data data frame with following variables: DEPH, TE90, PSAL, DENS, depth.max
 #' @param depth_range vector of 2 values identifying the range of temperature and salinity for average
 #'
 #' @return a data frame of 1 row for all variables calculated for the unique identifier
 #' @export
 #'
 
-summarize_CTD<- function(data,depth_range=c(0,50)){
+summarize_CTD<- function(df_data,depth_range=c(0,50)){
   col_out<-  c(paste0("T", paste(depth_range, collapse="_")),paste0("S", paste(depth_range, collapse="_")),"T_NB","S_NB","T_SURF","S_SURF", "STRAT","Tmin")
 
-data <-  data %>%  dplyr::arrange(DEPH) %>%  dplyr::filter(is.na(CPHL)) %>% dplyr::mutate(DEPH=round(DEPH))
+df_data <-  df_data %>%  dplyr::arrange(DEPH) %>%  dplyr::filter(is.na(CPHL)) %>% dplyr::mutate(DEPH=round(DEPH))
 
 
-last_5_m= seq(max(data$DEPH)-4, max(data$DEPH))
+# Inputs:
+#     df_data: data frame with following variables: DEPH, TE90, PSAL, DENS
+#     depth_range: vector of length 2 delimiting a depth range
+#     sounding: vector of length 1 indicating bottom/nominal depth
 
- #  nominal_depth<-ifelse(round(max(data$depth.max)*0.85,0) > max(data$DEPH),max(data$DEPH),round(max(data$depth.max)*0.85,0))
-   #  T_NB<-data[which(round(data$DEPH,0)==round(nominal_depth,0))[1],"TE90"]
-   #  S_NB<-data[which(round(data$DEPH,0)==round(nominal_depth,0))[1],"PSAL"]
+# empty list to store results
+ls_out <- list()
 
-  T_NB<-mean(data[which(data$DEPH %in% last_5_m),"TE90"], na.rm=T)
-  S_NB<-mean(data[which(data$DEPH %in% last_5_m),"PSAL"], na.rm=T)
+# indices of points near 5m, 50m, within depth range and near bottom
+#-------------------------------------------------------------------
+# index of point(s) closest to 5 m
+i_5 <- which.min(abs(df_data$DEPH-5))
+# take mean of points in case n>1 (e.g. 4.5m and 5.5m)
+z_5 <- mean(df_data$DEPH[i_5], na.rm=T)
+# flag - z_5 must be within 5+-0.5m
+tf_5 <- z_5>=4.5 & z_5<=5.5
+#-------------------------------------------------------------------
+# index of point(s) closest to 50 m
+i_50 <- which.min(abs(df_data$DEPH-50))
+# take mean of points in case n>1 (e.g. 49m and 51m)
+z_50 <- mean(df_data$DEPH[i_50], na.rm=T)
+# flag - z_50 must be within 50+-2.5m
+tf_50 <- z_50>=47.5 & z_50<=52.5
+#-------------------------------------------------------------------
+# index of point(s) within depth range
+i_range <- which(df_data$DEPH>=depth_range[1] & df_data$DEPH<=depth_range[2])
+#-------------------------------------------------------------------
+# index of point(s) near bottom #check conditions 85% later
+i_bot <- which.max(df_data$DEPH)
 
-    Tmin<-min(data[,"TE90"], na.rm=T)
 
-    surf_depth <- ifelse(5 %in% data$DEPH, 5, min(data$DEPH)) # lots of missing values above 5 m
+#depth.max
+df_data <-  df_data %>%  mutate(depth.max=ifelse(is.na(depth.max), max(DEPTH, na.rm=T), depth.max))
 
-    T_SURF<-data[which(data$DEPH == surf_depth),"TE90"]
-    DENS_SURF<-data[which(data$DEPH == surf_depth),"DENS"]
-    S_SURF<-data[which(data$DEPH == surf_depth),"PSAL"]
+# temperature and salinity indices
+# surface values
+ls_out$T_SURF <- ifelse(tf_5, mean(df_data$TE90[i_5], na.rm=T), NA)
+ls_out$S_SURF <- ifelse(tf_5, mean(df_data$PSAL[i_5], na.rm=T), NA)
+# in-range values
+ls_out[[paste0("T_", depth_range[1], "_", depth_range[2])]] <- ifelse(length(i_range)>0, mean(df_data$TE90[i_range], na.rm=T), NA)
+ls_out[[paste0("S_", depth_range[1], "_", depth_range[2])]] <- ifelse(length(i_range)>0, mean(df_data$PSAL[i_range], na.rm=T), NA)
+# bottom values
+ls_out$T_NB <- ifelse(length(i_bot)>0 & max(df_data$DEPH) > 0.85 * df_data$depth.max, mean(df_data$TE90[i_bot], na.rm=T), NA)
+ls_out$S_NB <- ifelse(length(i_bot)>0& max(df_data$DEPH) > 0.85 * df_data$depth.max, mean(df_data$PSAL[i_bot], na.rm=T), NA)
+# minimum temperature
+ls_out$T_MIN <- min(df_data$TE90, na.rm=T)
 
-    depth50 <- ifelse(50 %in% data$DEPH, 50,
-                      ifelse(max(data$DEPH) <50, max(max(data$DEPH)),
-                             ifelse(49 %in% data$DEPH, 49, #if 50 is missing
-                                    ifelse(51 %in% data$DEPH, 51,NA
-                                    ))))
-    DENS_50<-data[which(data$DEPH == depth50),"DENS"]
+# stratification index
+dens_5 <- ifelse(tf_5, mean(df_data$DENS[i_5], na.rm=T), NA)
+dens_50 <- ifelse(tf_50, mean(df_data$DENS[i_50], na.rm=T), NA)
+ls_out$STRAT <- dens_50-dens_5
 
-    STRAT<-DENS_50-DENS_SURF
-    #which row fit the depth range
-    row_range<-which(data$DEPH>=depth_range[1] & data$DEPH<=depth_range[2])
+ls_out$ID <-  df_data[1,"ID"]
+# output
+as.data.frame(ls_out)
 
-    #calculate averages
-    #temp<-cbind(u,mean(data[row_range,"Temp"], na.rm=T),mean(data[row_range,"Salinity"], na.rm=T),mean(data[row_range,"DENS"], na.rm=T),STRAT,T_NB,S_NB,T_SURF,S_SURF)
-    temp<-as.data.frame(cbind(mean(data[row_range,"TE90"], na.rm=T),
-                              tryCatch({mean(data[row_range,"PSAL"], na.rm=T)}, error = function(e) {return(NA)}),
-                              T_NB,
-                              ifelse(is.null(S_NB), NA, S_NB),
-                              T_SURF,
-                              ifelse(is.null(S_SURF), NA, S_SURF),
-                              ifelse(is.null(STRAT), NA, STRAT),
-                              Tmin))
-
-    colnames(temp)<-col_out
-    temp$ID <-  data[1,"ID"]
-
-  return(temp)
-  }
+}
 
 
 ####bouteilles

@@ -415,17 +415,17 @@ as.data.frame(ls_out)
 #' @return a data frame of 1 row for all variables calculated for the unique identifier
 #' @export
 
-summarize_BOT_STRAT<- function(data, depth_range=c(0,100)){
+summarize_BOT_STRAT<- function(df_data, depth_range=c(0,100)){
 
-  data <-  data %>%  dplyr::arrange(DEPH) %>% dplyr::filter(!is.na(CPHL)) %>%  dplyr::select(ID,DEPH, depth.max, CPHL)
+  df_data <-  df_data %>%  dplyr::arrange(DEPH) %>% dplyr::filter(!is.na(CPHL)) %>%  dplyr::select(ID,DEPH, depth.max, CPHL)
 
 
-    integration<-DIS_Profile_Integration(df.data=data, depth_range=depth_range)
+    integration<-DIS_Profile_Integration(df.df_data=df_data, depth_range=depth_range)
     integration<- tidyr::pivot_wider(integration, 1, names_from="variable", values_from = "value")
 
-    fil<- dplyr::filter(data, DEPH < 5)
+    fil<- dplyr::filter(df_data, DEPH < 5)
 
-    if(nrow(fil)> 0) integration$CPHLSURF <-  data[which.min(fil$DEPH),"CPHL"]
+    if(nrow(fil)> 0) integration$CPHLSURF <-  df_data[which.min(fil$DEPH),"CPHL"]
     if(nrow(fil)== 0) integration$CPHLSURF <-  NA
 
 

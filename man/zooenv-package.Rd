@@ -8,4 +8,8 @@
 \description{
 Extract and compute indices from CTD and Bottle data and merge with zooplankton dataframe.
 }
+\author{
+\strong{Maintainer}: Lehoux Caroline \email{caroline.lehoux@dfo-mpo.gc.ca} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
+
+}
 \keyword{internal}

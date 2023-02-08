@@ -2,7 +2,7 @@ Package: zooenv
 Title: Environmental variables merging with zooplancton data
 Version: 0.0.1
 Authors@R: 
-    person("Lehoux", "Caroline", "first.last@example.com", role = c("aut", "cre")
+    person("Lehoux", "Caroline", "first.last@example.com", role = c("aut", "cre"))
 Description: Extract and compute indices from CTD and Bottle data and merge with zooplankton dataframe.
 License: MIT + file LICENSE
 Encoding: UTF-8

@@ -342,7 +342,7 @@ return(ctd_id)
 
 summarize_CTD<- function(df_data,depth_range=c(0,50)){
 
-df_data <-  df_data %>%  dplyr::arrange(DEPH) %>%  dplyr::filter(is.na(CPHL)) %>% dplyr::mutate(DEPH=round(DEPH))
+df_data <-  df_data %>%  dplyr::arrange(DEPH) %>%  dplyr::filter(is.na(CPHL), !is.na(TE90), !is.na(PSAL)) %>% dplyr::mutate(DEPH=round(DEPH))
 
 
 # Inputs:
@@ -377,10 +377,6 @@ i_bot <- which.max(df_data$DEPH)
 #flag bottom
 f_bot <- (max(df_data$DEPH) > 0.85 * df_data$depth.max[1]) | df_data$depth.max[1] < 50
 
-
-
-#depth.max
-df_data <-  df_data %>%  mutate(depth.max=ifelse(is.na(depth.max), max(DEPH, na.rm=T), depth.max))
 
 # temperature and salinity indices
 # surface values

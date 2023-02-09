@@ -342,7 +342,7 @@ return(ctd_id)
 
 summarize_CTD<- function(df_data,depth_range=c(0,50)){
 
-df_data <-  df_data %>%  dplyr::arrange(DEPH) %>%  dplyr::filter(is.na(CPHL), !is.na(TE90), !is.na(PSAL)) %>% dplyr::mutate(DEPH=round(DEPH))
+df_data <-  df_data %>%  dplyr::arrange(DEPH) %>%  dplyr::filter(is.na(CPHL), !is.na(TE90)) %>% dplyr::mutate(DEPH=round(DEPH))
 
 
 # Inputs:

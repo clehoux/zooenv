@@ -126,7 +126,7 @@ if(nchar (date[i])!=10) stop("Date format is not OK. should be YYYY/MM/DD")
       #cal_sf<-st_transform(cal_sf, crs=lcc)
 
       #dustance is in meters does not work with lat long 0.2
-      xbt_JD= suppressMessages(sf::st_join(dat_sf, xbt_sf, join = nngeo::st_nn)$SEQ_JD)
+      xbt_JD= suppressMessages(sf::st_join(dat_sf, xbt_sf, join = nngeo::st_nn,progress=F)$SEQ_JD)
       xbresults <- xbresults %>%  dplyr::filter(SEQ_JD==xbt_JD)
 
     }
@@ -200,7 +200,7 @@ if(nchar (date[i])!=10) stop("Date format is not OK. should be YYYY/MM/DD")
     #cal_sf<-st_transform(cal_sf, crs=lcc)
 
     #dustance is in meters does not work with lat long 0.2
-   ctd_JD= suppressMessages(sf::st_join(dat_sf, ctd_sf, join = nngeo::st_nn)$SEQ_JD)
+   ctd_JD= suppressMessages(sf::st_join(dat_sf, ctd_sf, join = nngeo::st_nn,progress=F)$SEQ_JD)
    results <- results %>%  dplyr::filter(SEQ_JD==ctd_JD)
 
   }
@@ -281,7 +281,7 @@ botresults<-ROracle::fetch(rs)
     #cal_sf<-st_transform(cal_sf, crs=lcc)
 
     #dustance is in meters does not work with lat long 0.2
-    bot_JD= suppressMessages(sf::st_join(dat_sf, bot_sf, join = nngeo::st_nn)$SEQ_JD)
+    bot_JD= suppressMessages(sf::st_join(dat_sf, bot_sf, join = nngeo::st_nn,progress=F)$SEQ_JD)
     botresults <- botresults %>%  dplyr::filter(SEQ_JD==bot_JD)
 
   }
@@ -341,7 +341,6 @@ return(ctd_id)
 #'
 
 summarize_CTD<- function(df_data,depth_range=c(0,50)){
-  col_out<-  c(paste0("T", paste(depth_range, collapse="_")),paste0("S", paste(depth_range, collapse="_")),"T_NB","S_NB","T_SURF","S_SURF", "STRAT","Tmin")
 
 df_data <-  df_data %>%  dplyr::arrange(DEPH) %>%  dplyr::filter(is.na(CPHL)) %>% dplyr::mutate(DEPH=round(DEPH))
 

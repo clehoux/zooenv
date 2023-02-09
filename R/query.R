@@ -15,6 +15,7 @@
 #' @param range_ctd vector of 2 values, identifying the minimum and maximum range for summarizing temperature and salinity
 #' @param range_bot vector of 2 values, for chlrophyll integration
 #' @param drv driver use this : DBI::dbDriver("Oracle")
+#' @param newvar should Tmax, depth of Tmin, max cholorphylle be extracted? default to FALSE
 #'
 #' @return a data frame  with the unique idnetifier and calculated variables, join with your data using the unique identifier
 #' @export
@@ -25,7 +26,7 @@
 #'
 #'
 #'
-SGDO_sql<-function(drv, latitude, longitude, date, time, timezone="UTC",depth.max=Inf, ID, geotol=0.02, timetol=24, station=NULL, range_ctd=c(0,50), range_bot=c(0,100)){
+SGDO_sql<-function(drv, latitude, longitude, date, time, timezone="UTC",depth.max=Inf, ID, geotol=0.02, timetol=24, station=NULL, range_ctd=c(0,50), range_bot=c(0,100), newvar=F){
 
   #verifiy conditions
   if(anyNA(latitude)) {stop("removes rows with missing positions")}
@@ -313,10 +314,10 @@ if(!is.null(depth.max)) prof$depth.max = depth.max[i]
 if(is.null(depth.max)) prof$depth.max =max(prof$PROFD_MAX_JD)
 
 if(ncol(results2) >3 | ncol(xbresults2)>3){
-ctd<- summarize_CTD(df_data=prof,depth_range=range_ctd)
+ctd<- summarize_CTD(df_data=prof,depth_range=range_ctd, newvar=newvar)
 }
 if(ncol(botresults2) >3){
-bot <-  summarize_BOT_STRAT(df_data=prof, depth_range=range_bot)
+bot <-  summarize_BOT_STRAT(df_data=prof, depth_range=range_bot, newvar=newvar)
 }
 if(!ncol(botresults2) >3){
   bot <- data.frame(ID=ID[i])
@@ -335,12 +336,13 @@ return(ctd_id)
 #'
 #' @param df_data data frame with following variables: DEPH, TE90, PSAL, DENS, depth.max
 #' @param depth_range vector of 2 values identifying the range of temperature and salinity for average
+#' @param newvar should Tmax, depth of Tmin, max cholorphylle be extracted? default to FALSE
 #'
 #' @return a data frame of 1 row for all variables calculated for the unique identifier
 #' @export
 #'
 
-summarize_CTD<- function(df_data,depth_range=c(0,50)){
+summarize_CTD<- function(df_data,depth_range=c(0,50), newvar){
 
 df_data <-  df_data %>%  dplyr::arrange(DEPH) %>%  dplyr::filter(is.na(CPHL), !is.na(TE90)) %>% dplyr::mutate(DEPH=round(DEPH))
 
@@ -390,7 +392,10 @@ ls_out$T_NB <- ifelse(length(i_bot)>0 & f_bot, mean(df_data$TE90[i_bot], na.rm=T
 ls_out$S_NB <- ifelse(length(i_bot)>0 & f_bot, mean(df_data$PSAL[i_bot], na.rm=T), NA)
 # minimum temperature
 ls_out$T_MIN <- min(df_data$TE90, na.rm=T)
-
+if(newvar){
+ls_out$Depth_T_MIN <-  df_data[which.min(df_data$TE90), "DEPH"]
+ls_out$T_MAX <- max(df_data$TE90, na.rm=T)
+}
 # stratification index
 dens_5 <- ifelse(tf_5, mean(df_data$DENS[i_5], na.rm=T), NA)
 dens_50 <- ifelse(tf_50, mean(df_data$DENS[i_50], na.rm=T), NA)
@@ -409,11 +414,12 @@ as.data.frame(ls_out)
 #'
 #' @param data bottles data at discrete depth
 #' @param depth_range vector of 2 values, for chlrophyll integration
+#' @param newvar should Tmax, depth of Tmin, max cholorphylle be extracted? default to FALSE
 #'
 #' @return a data frame of 1 row for all variables calculated for the unique identifier
 #' @export
 
-summarize_BOT_STRAT<- function(df_data, depth_range=c(0,100)){
+summarize_BOT_STRAT<- function(df_data, depth_range=c(0,100), newvar){
 
   df_data <-  df_data %>%  dplyr::arrange(DEPH) %>% dplyr::filter(!is.na(CPHL)) %>%  dplyr::select(ID,DEPH, depth.max, CPHL)
 
@@ -425,8 +431,10 @@ summarize_BOT_STRAT<- function(df_data, depth_range=c(0,100)){
 
     if(nrow(fil)> 0) integration$CPHLSURF <-  df_data[which.min(fil$DEPH),"CPHL"]
     if(nrow(fil)== 0) integration$CPHLSURF <-  NA
-
-
+if(newvar){
+    ls_out$CPHLmax <- max(integration$CPHL, na.rm=T)
+    ls_out$Depth_CPHLmax <-  integration[which.max(df_data$CPHL), "DEPH"]
+}
     return(integration)
 }
 

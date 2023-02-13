@@ -358,14 +358,16 @@ ls_out <- list()
 # indices of points near 5m, 50m, within depth range and near bottom
 #-------------------------------------------------------------------
 # index of point(s) closest to 5 m
-i_5 <- which.min(abs(df_data$DEPH-5))
+tmp <- abs(df_data$DEPH-5)
+i_5 <- which(tmp == min(tmp, na.rm=T))
 # take mean of points in case n>1 (e.g. 4.5m and 5.5m)
 z_5 <- mean(df_data$DEPH[i_5], na.rm=T)
 # flag - z_5 must be within 5+-0.5m
 tf_5 <- z_5>=4 & z_5<=6
 #-------------------------------------------------------------------
 # index of point(s) closest to 50 m
-i_50 <- which.min(abs(df_data$DEPH-50))
+tmp <- abs(df_data$DEPH-50)
+i_50 <- which(tmp == min(tmp, na.rm=T))
 # take mean of points in case n>1 (e.g. 49m and 51m)
 z_50 <- mean(df_data$DEPH[i_50], na.rm=T)
 # flag - z_50 must be within 50+-2.5m
@@ -375,10 +377,7 @@ tf_50 <- ifelse(df_data$depth.max[1] < 50, T, z_50>=47& z_50<=53)
 i_range <- which(df_data$DEPH>=depth_range[1] & df_data$DEPH<=depth_range[2])
 #-------------------------------------------------------------------
 # index of point(s) near bottom
-i_bot <- which.max(df_data$DEPH)
-#flag bottom
-f_bot <- (max(df_data$DEPH) > 0.85 * df_data$depth.max[1]) | df_data$depth.max[1] < 50
-
+i_bot <- which(df_data$DEPH>=0.85*sounding)
 
 # temperature and salinity indices
 # surface values
@@ -388,8 +387,8 @@ ls_out$S_SURF <- ifelse(tf_5, mean(df_data$PSAL[i_5], na.rm=T), NA)
 ls_out[[paste0("T_", depth_range[1], "_", depth_range[2])]] <- ifelse(length(i_range)>0, mean(df_data$TE90[i_range], na.rm=T), NA)
 ls_out[[paste0("S_", depth_range[1], "_", depth_range[2])]] <- ifelse(length(i_range)>0, mean(df_data$PSAL[i_range], na.rm=T), NA)
 # bottom values
-ls_out$T_NB <- ifelse(length(i_bot)>0 & f_bot, mean(df_data$TE90[i_bot], na.rm=T), NA)
-ls_out$S_NB <- ifelse(length(i_bot)>0 & f_bot, mean(df_data$PSAL[i_bot], na.rm=T), NA)
+ls_out$T_NB <- ifelse(length(i_bot)>0 , mean(df_data$TE90[i_bot], na.rm=T), NA)
+ls_out$S_NB <- ifelse(length(i_bot)>0 , mean(df_data$PSAL[i_bot], na.rm=T), NA)
 # minimum temperature
 ls_out$T_MIN <- min(df_data$TE90, na.rm=T)
 if(newvar){

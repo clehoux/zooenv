@@ -17,7 +17,8 @@ SGDO_sql(
   timetol = 24,
   station = NULL,
   range_ctd = c(0, 50),
-  range_bot = c(0, 100)
+  range_bot = c(0, 100),
+  newvar = F
 )
 }
 \arguments{
@@ -46,6 +47,8 @@ SGDO_sql(
 \item{range_ctd}{vector of 2 values, identifying the minimum and maximum range for summarizing temperature and salinity}
 
 \item{range_bot}{vector of 2 values, for chlrophyll integration}
+
+\item{newvar}{should Tmax, depth of Tmin, max cholorphylle be extracted? default to FALSE}
 }
 \value{
 a data frame  with the unique idnetifier and calculated variables, join with your data using the unique identifier

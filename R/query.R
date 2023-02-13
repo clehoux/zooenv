@@ -377,7 +377,7 @@ tf_50 <- ifelse(df_data$depth.max[1] < 50, T, z_50>=47& z_50<=53)
 i_range <- which(df_data$DEPH>=depth_range[1] & df_data$DEPH<=depth_range[2])
 #-------------------------------------------------------------------
 # index of point(s) near bottom
-i_bot <- which(df_data$DEPH>=0.85*sounding)
+i_bot <- which(df_data$DEPH>=0.85*df_data$depth.max[1])
 
 # temperature and salinity indices
 # surface values

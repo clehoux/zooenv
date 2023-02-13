@@ -4,12 +4,14 @@
 \alias{summarize_CTD}
 \title{Summarizing CTD profiles}
 \usage{
-summarize_CTD(df_data, depth_range = c(0, 50))
+summarize_CTD(df_data, depth_range = c(0, 50), newvar)
 }
 \arguments{
 \item{df_data}{data frame with following variables: DEPH, TE90, PSAL, DENS, depth.max}
 
 \item{depth_range}{vector of 2 values identifying the range of temperature and salinity for average}
+
+\item{newvar}{should Tmax, depth of Tmin, max cholorphylle be extracted? default to FALSE}
 }
 \value{
 a data frame of 1 row for all variables calculated for the unique identifier

@@ -431,8 +431,8 @@ summarize_BOT_STRAT<- function(df_data, depth_range=c(0,100), newvar){
     if(nrow(fil)> 0) integration$CPHLSURF <-  df_data[which.min(fil$DEPH),"CPHL"]
     if(nrow(fil)== 0) integration$CPHLSURF <-  NA
 if(newvar){
-    ls_out$CPHLmax <- max(integration$CPHL, na.rm=T)
-    ls_out$Depth_CPHLmax <-  integration[which.max(df_data$CPHL), "DEPH"]
+    integration$CPHLmax <- max(df_data$CPHL, na.rm=T)
+    integration$Depth_CPHLmax <-   df_data[which.max(df_data$CPHL), "DEPH"]
 }
     return(integration)
 }

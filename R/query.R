@@ -192,6 +192,8 @@ if(nchar (date[i])!=10) stop("Date format is not OK. should be YYYY/MM/DD")
 }
 
   if(is.null(station) & nrow(results)>1){
+if(any(grepl(results$DESC_MISS, pattern="Bou")) & nrow(results[!grepl(results$DESC_MISS, pattern="Bou"),]) > 0) results<-  results[!grepl(results$DESC_MISS, pattern="Bou"),]
+
 
     ctd_sf <- sf::st_as_sf(results, coords = c("LOND", "LATD"))
     sf::st_crs(ctd_sf) <- 4326

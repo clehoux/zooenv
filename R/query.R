@@ -187,7 +187,8 @@ if(nchar (date[i])!=10) stop("Date format is not OK. should be YYYY/MM/DD")
   results<-ROracle::fetch(rs)
 
   if(!is.null(station) & nrow(results >1)){
-  if(nrow(results)>1 & station[i] %in% results$STATION_CTD) results<-  results %>% dplyr::filter(STATION_CTD==station[i])
+ # if(nrow(results)>1 & station[i] %in% results$STATION_CTD)
+  results<-  results %>% dplyr::filter(STATION_CTD==station[i])
   ctd_JD=results$SEQ_JD
 }
 

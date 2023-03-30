@@ -187,12 +187,12 @@ if(nchar (date[i])!=10) stop("Date format is not OK. should be YYYY/MM/DD")
   results<-ROracle::fetch(rs)
 
   if(!is.null(station) & nrow(results >1)){
- # if(nrow(results)>1 & station[i] %in% results$STATION_CTD)
+  if(nrow(results)>1 & station[i] %in% results$STATION_CTD)
   results<-  results %>% dplyr::filter(STATION_CTD==station[i])
   ctd_JD=results$SEQ_JD
 }
 
-  if(is.null(station) & nrow(results)>1){
+  if(is.null(station) | nrow(results)>1){
 if(any(grepl(results$DESC_MISS, pattern="Bou")) & nrow(results[!grepl(results$DESC_MISS, pattern="Bou"),]) > 0) results<-  results[!grepl(results$DESC_MISS, pattern="Bou"),]
 
 
@@ -209,11 +209,11 @@ if(any(grepl(results$DESC_MISS, pattern="Bou")) & nrow(results[!grepl(results$DE
 
   }
 
-  if(nrow(results ==1)){
+  if(nrow(results) ==1){
     ctd_JD=results$SEQ_JD
   }
 
-  if(nrow(results !=0)){
+  if(nrow(results) !=0){
 
 
 
@@ -271,12 +271,12 @@ if(any(grepl(results$DESC_MISS, pattern="Bou")) & nrow(results[!grepl(results$DE
 botresults<-ROracle::fetch(rs)
 
   if(!is.null(station) & nrow(botresults >1)){
-   # if(nrow(botresults)>1 & station[i] %in% botresults$STATION_BOT)
-      botresults<-  botresults %>% dplyr::filter(STATION_BOT==station[i])
+    if(nrow(botresults)>1 & station[i] %in% botresults$STATION_BOT)
+    botresults<-  botresults %>% dplyr::filter(STATION_BOT==station[i])
     bot_JD=botresults$SEQ_JD
   }
 
-  if(is.null(station) & nrow(botresults)>1){
+  if(is.null(station) | nrow(botresults)>1){
 
     bot_sf <- sf::st_as_sf(botresults, coords = c("LOND", "LATD"))
     sf::st_crs(bot_sf) <- 4326
@@ -291,10 +291,10 @@ botresults<-ROracle::fetch(rs)
 
   }
 
-  if(nrow(botresults ==1)){
+  if(nrow(botresults) ==1){
     bot_JD=botresults$SEQ_JD
   }
-if(nrow(botresults !=0)){
+if(nrow(botresults) !=0){
   ###bot###
   sql_bot2<-paste0("SELECT
                 sg.deph,

@@ -271,7 +271,8 @@ if(any(grepl(results$DESC_MISS, pattern="Bou")) & nrow(results[!grepl(results$DE
 botresults<-ROracle::fetch(rs)
 
   if(!is.null(station) & nrow(botresults >1)){
-    if(nrow(botresults)>1 & station[i] %in% botresults$STATION_BOT) botresults<-  botresults %>% dplyr::filter(STATION_BOT==station[i])
+   # if(nrow(botresults)>1 & station[i] %in% botresults$STATION_BOT)
+      botresults<-  botresults %>% dplyr::filter(STATION_BOT==station[i])
     bot_JD=botresults$SEQ_JD
   }
 

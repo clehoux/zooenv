@@ -8,7 +8,7 @@
 set_sgdo_pass <-  function(){
   options(SGDO_host =  rstudioapi::askForPassword("Enter host"))
   options(SGDO_uid = rstudioapi::askForPassword("Enter username"))
-  options(SGDP_pass = rstudioapi::askForPassword("Enter password"))
+  options(SGDO_pass = rstudioapi::askForPassword("Enter password"))
 
 
 }

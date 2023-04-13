@@ -54,7 +54,7 @@ SGDO_sql<-function(drv, latitude, longitude, date, time, timezone="UTC",depth.ma
 
      # create an Oracle Database instance and create connection
 
-  host= options(SGDO_host)
+  host= getOption("SGDO_host", "")
     # connect string specifications
   connect.string <- paste(
     "(DESCRIPTION=",
@@ -72,8 +72,8 @@ SGDO_sql<-function(drv, latitude, longitude, date, time, timezone="UTC",depth.ma
                        width = 50,   # Progress bar width. Defaults to getOption("width")
                        char = "=")
 
-  username=options(SGDO_uid)
-  password=options(SGDO_pass)
+  username=getOption("SGDO_uid", "")
+  password=getOption("SGDO_pass", "")
   #loop to extract ctd for each observations
   for(i in 1:length(ID)){
     conn <- ROracle::dbConnect(drv, username=username, password=password, dbname = connect.string)

@@ -479,6 +479,7 @@ DIS_Profile_Integration <- function(df.data, depth_range) {
                   dplyr::select("ID", "DEPH", i_var, "depth.max") %>%
                   dplyr::rename("value"=i_var) %>%
                   dplyr::group_by(ID) %>%
+                  dplyr::arrange(DEPH) %>%
                   dplyr::summarize(value=DIS_Integrate_Profile(DEPH, value, depth.max, depth_range)) %>%
                   dplyr::mutate(var_name=i_var, z1=depth_range[1], z2=depth_range[2]) %>%
                   tidyr::unite(variable, var_name, z1, z2, sep="_"))

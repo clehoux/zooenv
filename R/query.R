@@ -207,7 +207,7 @@ if(nchar (date[i])!=10) stop("Date format is not OK. should be YYYY/MM/DD")
   ctd_JD=results$SEQ_JD
 }
 
-  if(is.null(station) | nrow(results)>1){
+  if(is.null(station) & nrow(results)>1){
 if(any(grepl(results$DESC_MISS, pattern="Bou")) & nrow(results[!grepl(results$DESC_MISS, pattern="Bou"),]) > 0) results<-  results[!grepl(results$DESC_MISS, pattern="Bou"),]
 
 
@@ -259,7 +259,7 @@ if(any(grepl(results$DESC_MISS, pattern="Bou")) & nrow(results[!grepl(results$DE
 
   if(nrow(results) ==0) results2 <-  data.frame(ID=ID[i])
 
-  #########Bottles#########
+    #########Bottles#########
   sql_bot<-paste0("SELECT DISTINCT
                 sg.seq_jd,
                 sg.latd,
@@ -291,7 +291,7 @@ botresults<-ROracle::fetch(rs)
     bot_JD=botresults$SEQ_JD
   }
 
-  if(is.null(station) | nrow(botresults)>1){
+  if(is.null(station) & nrow(botresults)>1){
 
     bot_sf <- sf::st_as_sf(botresults, coords = c("LOND", "LATD"))
     sf::st_crs(bot_sf) <- 4326

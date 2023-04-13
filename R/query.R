@@ -16,6 +16,7 @@
 #' @param range_bot vector of 2 values, for chlrophyll integration
 #' @param drv driver use this : DBI::dbDriver("Oracle")
 #' @param newvar should Tmax, depth of Tmin, max cholorphylle be extracted? default to FALSE
+#' @param get_summary should indices be returned, default to TRUE to return calculated indices, FALSE to return the selected profile
 #'
 #' @return a data frame  with the unique idnetifier and calculated variables, join with your data using the unique identifier
 #' @export
@@ -26,7 +27,7 @@
 #'
 #'
 #'
-SGDO_sql<-function(drv, latitude, longitude, date, time, timezone="UTC",depth.max=Inf, ID, geotol=0.02, timetol=24, station=NULL, range_ctd=c(0,50), range_bot=c(0,100), newvar=F){
+SGDO_sql<-function(drv, latitude, longitude, date, time, timezone="UTC",depth.max=Inf, ID, geotol=0.02, timetol=24, station=NULL, range_ctd=c(0,50), range_bot=c(0,100), newvar=F, get_summary=T){
 
   #verifiy conditions
   if(anyNA(latitude)) {stop("removes rows with missing positions")}
@@ -328,8 +329,10 @@ if(!ncol(botresults2) >3){
 }
 
 if(ncol(prof)>3){
-ctd_id <-  dplyr::bind_rows(ctd_id, suppressMessages(dplyr::full_join(ctd, bot)))
-}
+if(get_summary)  ctd_id <-  dplyr::bind_rows(ctd_id, suppressMessages(dplyr::full_join(ctd, bot)))
+if(!get_summary)  ctd_id <-  dplyr::bind_rows(ctd_id, prof)
+
+  }
 
 ROracle::dbDisconnect(conn)
 }

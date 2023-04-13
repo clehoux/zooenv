@@ -34,3 +34,7 @@ Program files parce que ça prend les droits d’admin pour y écrire.
     Sys.setenv(OCI_INC=“C:/instantclient_19_8/sdk/include”)
 7.  Installer ROracle de CRAN. Quand on demande si vous voulez le «
     compile from source » =oui!
+
+Credentials to access SGDO are stored in options and can be set by
+loading a RProfile or by using the function set_sgdo_pass which pops
+windows for entering your credentials.

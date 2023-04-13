@@ -18,7 +18,8 @@ SGDO_sql(
   station = NULL,
   range_ctd = c(0, 50),
   range_bot = c(0, 100),
-  newvar = F
+  newvar = F,
+  get_summary = T
 )
 }
 \arguments{
@@ -49,6 +50,8 @@ SGDO_sql(
 \item{range_bot}{vector of 2 values, for chlrophyll integration}
 
 \item{newvar}{should Tmax, depth of Tmin, max cholorphylle be extracted? default to FALSE}
+
+\item{get_summary}{should indices be returned, default to TRUE to return calculated indices, FALSE to return the selected profile}
 }
 \value{
 a data frame  with the unique idnetifier and calculated variables, join with your data using the unique identifier

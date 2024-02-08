@@ -476,7 +476,7 @@ DIS_Profile_Integration <- function(df.data, depth_range) {
   for (i_var in var_name) {
     df <- rbind(df,
                 df.data %>%
-                  dplyr::select("ID", "DEPH", i_var, "depth.max") %>%
+                  dplyr::select("ID", "DEPH", all_of(i_var), "depth.max") %>%
                   dplyr::rename("value"=i_var) %>%
                   dplyr::group_by(ID) %>%
                   dplyr::arrange(DEPH) %>%

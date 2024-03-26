@@ -338,7 +338,7 @@ ctd<- summarize_CTD(df_data=prof,depth_range=range_ctd, newvar=newvar)
 if(ncol(botresults2) >3){
 bot <-  summarize_BOT_STRAT(df_data=prof, depth_range=range_bot, newvar=newvar)
 }
-if(!ncol(botresults2) >3){
+if(ncol(botresults2) <3 ){
   bot <- data.frame(ID=ID[i])
 }
 
